@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 
 st.set_page_config(
@@ -372,4 +371,3 @@ else:
     st.caption(
         "Economía · Universidad Tecnológica de Bolívar"
     )
-```
