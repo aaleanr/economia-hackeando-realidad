@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 
 st.set_page_config(
@@ -60,11 +61,6 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
-
-# ---------------------------------------------------------
-# DATA
-# ---------------------------------------------------------
 
 ROUNDS = [
     {
@@ -174,7 +170,6 @@ ROUNDS = [
     },
 ]
 
-
 METRICS = [
     ("📈", "Crecimiento"),
     ("👷", "Empleo"),
@@ -182,11 +177,6 @@ METRICS = [
     ("🌱", "Ambiente"),
     ("😊", "Bienestar"),
 ]
-
-
-# ---------------------------------------------------------
-# SESSION STATE
-# ---------------------------------------------------------
 
 if "started" not in st.session_state:
     st.session_state.started = False
@@ -197,26 +187,28 @@ if "round" not in st.session_state:
 if "budget" not in st.session_state:
     st.session_state.budget = 10
 
-if "values" not in st.session_state:
-    st.session_state.values = [50, 50, 50, 50, 50]
+if "metric_values" not in st.session_state:
+    st.session_state.metric_values = [50, 50, 50, 50, 50]
 
 
 def reset_game():
     st.session_state.started = True
     st.session_state.round = 0
     st.session_state.budget = 10
-    st.session_state.values = [50, 50, 50, 50, 50]
+    st.session_state.metric_values = [50, 50, 50, 50, 50]
 
 
 def choose(option):
     effects = ROUNDS[st.session_state.round]["choices"][option][2]
 
-    st.session_state.values = [
+    st.session_state.metric_values = [
         max(0, min(100, value + effect))
-        for value, effect in zip(st.session_state.values, effects)
+        for value, effect in zip(
+            st.session_state.metric_values,
+            effects,
+        )
     ]
 
-    # Some decisions cost more resources than others.
     if option == 1:
         st.session_state.budget -= 2
     else:
@@ -231,7 +223,7 @@ def show_metrics():
     for col, (icon, name), value in zip(
         columns,
         METRICS,
-        st.session_state.values,
+        st.session_state.metric_values,
     ):
         with col:
             st.metric(
@@ -239,10 +231,6 @@ def show_metrics():
                 value=value,
             )
 
-
-# ---------------------------------------------------------
-# HEADER
-# ---------------------------------------------------------
 
 st.markdown(
     '<div class="brand">UTB · EXPERIENCIA INTERACTIVA</div>',
@@ -254,13 +242,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
-# ---------------------------------------------------------
-# INTRO
-# ---------------------------------------------------------
-
 if not st.session_state.started:
-
     st.write(
         "Una misión para descubrir que la economía no consiste "
         "solamente en números: consiste en tomar decisiones cuando "
@@ -299,13 +281,7 @@ if not st.session_state.started:
         "Puedes jugar individualmente o ponerte de acuerdo con tu grupo."
     )
 
-
-# ---------------------------------------------------------
-# GAME
-# ---------------------------------------------------------
-
 elif st.session_state.round < len(ROUNDS):
-
     current = ROUNDS[st.session_state.round]
 
     col1, col2 = st.columns([4, 1])
@@ -329,7 +305,6 @@ elif st.session_state.round < len(ROUNDS):
     )
 
     for i, (title, description, _) in enumerate(current["choices"]):
-
         if st.button(
             title,
             key=f"choice_{st.session_state.round}_{i}",
@@ -351,13 +326,7 @@ elif st.session_state.round < len(ROUNDS):
         "empeorar otro."
     )
 
-
-# ---------------------------------------------------------
-# RESULTS
-# ---------------------------------------------------------
-
 else:
-
     st.success("🎉 MISIÓN COMPLETADA")
 
     st.header("Acabas de hacer economía.")
@@ -403,3 +372,4 @@ else:
     st.caption(
         "Economía · Universidad Tecnológica de Bolívar"
     )
+```
