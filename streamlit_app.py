@@ -61,6 +61,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
+# ---------------------------------------------------------
+# DATA
+# ---------------------------------------------------------
+
 ROUNDS = [
     {
         "title": "Vivienda",
@@ -169,6 +174,7 @@ ROUNDS = [
     },
 ]
 
+
 METRICS = [
     ("📈", "Crecimiento"),
     ("👷", "Empleo"),
@@ -176,6 +182,11 @@ METRICS = [
     ("🌱", "Ambiente"),
     ("😊", "Bienestar"),
 ]
+
+
+# ---------------------------------------------------------
+# SESSION STATE
+# ---------------------------------------------------------
 
 if "started" not in st.session_state:
     st.session_state.started = False
@@ -189,6 +200,10 @@ if "budget" not in st.session_state:
 if "metric_values" not in st.session_state:
     st.session_state.metric_values = [50, 50, 50, 50, 50]
 
+# NEW: stores previous states so the user can go back
+if "history" not in st.session_state:
+    st.session_state.history = []
+
 
 def reset_game():
     st.session_state.started = True
@@ -196,8 +211,21 @@ def reset_game():
     st.session_state.budget = 10
     st.session_state.metric_values = [50, 50, 50, 50, 50]
 
+    # Clear previous decisions
+    st.session_state.history = []
+
 
 def choose(option):
+    # Save the current state BEFORE making the decision.
+    # This allows the user to undo the decision later.
+    st.session_state.history.append(
+        {
+            "round": st.session_state.round,
+            "budget": st.session_state.budget,
+            "metric_values": st.session_state.metric_values.copy(),
+        }
+    )
+
     effects = ROUNDS[st.session_state.round]["choices"][option][2]
 
     st.session_state.metric_values = [
@@ -216,6 +244,18 @@ def choose(option):
     st.session_state.round += 1
 
 
+# NEW: restore the previous state
+def go_back():
+    if not st.session_state.history:
+        return
+
+    previous = st.session_state.history.pop()
+
+    st.session_state.round = previous["round"]
+    st.session_state.budget = previous["budget"]
+    st.session_state.metric_values = previous["metric_values"]
+
+
 def show_metrics():
     columns = st.columns(5)
 
@@ -231,6 +271,10 @@ def show_metrics():
             )
 
 
+# ---------------------------------------------------------
+# HEADER
+# ---------------------------------------------------------
+
 st.markdown(
     '<div class="brand">UTB · EXPERIENCIA INTERACTIVA</div>',
     unsafe_allow_html=True,
@@ -241,7 +285,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
+# ---------------------------------------------------------
+# INTRO
+# ---------------------------------------------------------
+
 if not st.session_state.started:
+
     st.write(
         "Una misión para descubrir que la economía no consiste "
         "solamente en números: consiste en tomar decisiones cuando "
@@ -280,7 +330,13 @@ if not st.session_state.started:
         "Puedes jugar individualmente o ponerte de acuerdo con tu grupo."
     )
 
+
+# ---------------------------------------------------------
+# GAME
+# ---------------------------------------------------------
+
 elif st.session_state.round < len(ROUNDS):
+
     current = ROUNDS[st.session_state.round]
 
     col1, col2 = st.columns([4, 1])
@@ -304,6 +360,7 @@ elif st.session_state.round < len(ROUNDS):
     )
 
     for i, (title, description, _) in enumerate(current["choices"]):
+
         if st.button(
             title,
             key=f"choice_{st.session_state.round}_{i}",
@@ -313,6 +370,18 @@ elif st.session_state.round < len(ROUNDS):
             st.rerun()
 
         st.caption(description)
+
+    # NEW: Back button
+    if st.session_state.history:
+
+        st.divider()
+
+        if st.button(
+            "← Cambiar mi decisión anterior",
+            use_container_width=True,
+        ):
+            go_back()
+            st.rerun()
 
     st.divider()
 
@@ -325,7 +394,13 @@ elif st.session_state.round < len(ROUNDS):
         "empeorar otro."
     )
 
+
+# ---------------------------------------------------------
+# RESULTS
+# ---------------------------------------------------------
+
 else:
+
     st.success("🎉 MISIÓN COMPLETADA")
 
     st.header("Acabas de hacer economía.")
